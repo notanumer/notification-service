@@ -2,13 +2,14 @@ using DatabaseService.DataAccess;
 using DatabaseService.DataAccess.Abstractions;
 using DatabaseService.DataAccess.RabbitMq;
 using DatabaseService.Infrastructure;
+using DatabaseService.Middlewares;
 using DatabaseService.Services;
 using DatabaseService.Services.Abstractions;
 using Elastic.Serilog.Sinks;
-using Elastic.Transport;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Serilog;
+using Serilog.Enrichers.OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,12 +19,15 @@ var elasticUri = new Uri(builder.Configuration.GetConnectionString("ElasticSearc
 builder.Host.UseSerilog((context, config) =>
 {
     config
+        .Enrich.WithOpenTelemetryTraceId()
         .Enrich.FromLogContext()
-        .WriteTo.Console()
-        .WriteTo.Elasticsearch(
-            new ElasticsearchSinkOptions(
-                new DistributedTransport(
-                    new TransportConfiguration(elasticUri))));
+        .WriteTo.Logger(c =>
+        {
+            c.Filter.ByExcluding(e => e.Properties.TryGetValue("Path", out var path) &&
+                                      path.ToString().Trim('"') == "/metrics");
+            c.WriteTo.Console();
+        })
+        .WriteTo.Logger(c => c.WriteTo.Elasticsearch(new List<Uri> { elasticUri }));
 });
 
 builder.Services.AddOpenTelemetry().WithMetrics(metrics =>
@@ -62,7 +66,12 @@ builder.Services.AddMetrics();
 
 var app = builder.Build();
 
-app.MapPrometheusScrapingEndpoint("/metrics");
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseMiddleware<TraceIdMiddleware>();
+
+app.UseOpenTelemetryPrometheusScrapingEndpoint();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -71,9 +80,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseRouting();
 app.MapControllers();
-app.UseHttpsRedirection();
 
 await app.InitAsync();
 await app.RunAsync();
