@@ -1,0 +1,190 @@
+# Короче с запуском все просто, 3 команды:
+# docker compose up setup - и ждем пока не закончится с exit code 0. Эта джоба создает пользователя
+# docker compose up -d - тут запускаются все сервисы от бд до метрик
+# docker compose up databaseservice -d - если надо (тк можно разрабатывать локально), то запускаем сервис уведомлений
+# Запускать все из папки manifests
+
+# С появлением новых сервисов будем их сюда добавлять, можете делать по аналогии с существующим
+
+# Потом все сервисы запустятся, их порты в тут же и ищите. 
+# Единственное - чтоб пользоваться графаной нужно будет добавить коннекшн к прометеусу. Хост - http://prometheus:9090
+
+services:
+  databaseservice:
+    profiles:
+      - databaseservice
+    build:
+      context: ../database-service/
+      dockerfile: DatabaseService/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:5000
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__PgConnection: Server=postgres;User Id=postgres;Password=${POSTGRES_PASSWORD:-};Port=5432;Database=notifier;
+      ConnectionStrings__RabbitMqUri: amqp://guest:${RABBIT_PASSWORD:-}@rabbitmq:5672/
+      ConnectionStrings__ElasticSearchUri: http://elastic:${ELASTIC_PASSWORD:-}@elasticsearch:9200/
+    ports:
+      - "5000:5000"
+    networks:
+      - notifications
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:13
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
+      POSTGRES_DB: notifier
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - notifications
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD:-}
+    ports:
+      - "5672:5672"  # порт для AMQP (основной протокол RabbitMQ)
+      - "15672:15672" # порт для управления через браузер
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - notifications
+
+  # The 'setup' service runs a one-off script which initializes users inside
+  # Elasticsearch — such as 'logstash_internal' and 'kibana_system' — with the
+  # values of the passwords defined in the '.env' file. It also creates the
+  # roles required by some of these users.
+  #
+  # This task only needs to be performed once, during the *initial* startup of
+  # the stack. Any subsequent run will reset the passwords of existing users to
+  # the values defined inside the '.env' file, and the built-in roles to their
+  # default permissions.
+  #
+  # By default, it is excluded from the services started by 'docker compose up'
+  # due to the non-default profile it belongs to. To run it, either provide the
+  # '--profile=setup' CLI flag to Compose commands, or "up" the service by name
+  # such as 'docker compose up setup'.
+  
+  setup:
+    profiles:
+      - setup
+    build:
+      context: setup/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    init: true
+    volumes:
+      - ./setup/entrypoint.sh:/entrypoint.sh:ro,Z
+      - ./setup/lib.sh:/lib.sh:ro,Z
+      - ./setup/roles:/roles:ro,Z
+    environment:
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+    networks:
+      - notifications
+    depends_on:
+      - elasticsearch
+
+  elasticsearch:
+    build:
+      context: elasticsearch/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./elasticsearch/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro,Z
+      - elasticsearch:/usr/share/elasticsearch/data:Z
+    #    ports:
+    #      - 9200:9200
+    #      - 9300:9300
+    environment:
+      node.name: elasticsearch
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      ELASTIC_PASSWORD: ${ELASTIC_PASSWORD:-}
+      discovery.type: single-node
+    healthcheck:
+      test: curl -s http://localhost:9200 >/dev/null || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - notifications
+    restart: unless-stopped
+
+  kibana:
+    build:
+      context: kibana/
+      args:
+        ELASTIC_VERSION: ${ELASTIC_VERSION}
+    volumes:
+      - ./kibana/config/kibana.yml:/usr/share/kibana/config/kibana.yml:ro,Z
+    ports:
+      - 5601:5601
+    environment:
+      KIBANA_SYSTEM_PASSWORD: ${KIBANA_SYSTEM_PASSWORD:-}
+    networks:
+      - notifications
+    depends_on:
+      - elasticsearch
+    restart: unless-stopped
+  
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    #    ports:
+    #      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    networks:
+      - notifications
+  
+  grafana:
+    image: grafana/grafana-oss
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-}
+    ports:
+      - '3000:3000'
+    volumes:
+      - grafana:/var/lib/grafana
+    networks:
+      - notifications
+    depends_on:
+      - prometheus
+
+networks:
+  notifications:
+    driver: bridge
+
+volumes:
+  elasticsearch:
+  pg_data:
+  grafana:
+  prom_data:
