@@ -15,9 +15,12 @@ var rabbitUri = builder.Configuration.GetConnectionString("RabbitMqUri")
 var queueName = builder.Configuration.GetConnectionString("QueueName")
                                ?? throw new ArgumentNullException("QueueName",
                                    "Rabbit connection string is not initialized");
+var botUri = builder.Configuration.GetConnectionString("BotUri")
+                               ?? throw new ArgumentNullException("QueueName",
+                                   "Bot uri is not initialized");
 
 builder.Services.AddHostedService<MainService>(provider => new MainService(
-    "http://localhost:5098",
+    botUri,
     rabbitUri, 
     queueName 
 ));

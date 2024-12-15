@@ -8,6 +8,8 @@
 
 # Потом все сервисы запустятся, их порты в тут же и ищите. 
 # Единственное - чтоб пользоваться графаной нужно будет добавить коннекшн к прометеусу. Хост - http://prometheus:9090
+#
+# Для запуска телеграм бота заменить <token>
 
 services:
   databaseservice:
@@ -33,7 +35,39 @@ services:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
-
+      telegramservice:
+        condition: service_started
+  telegramservice:
+    build:
+      context: ../database-service/
+      dockerfile: TelegramNotifier/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:5001
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__QueueName: Telegram
+      ConnectionStrings__RabbitMqUri: amqp://guest:${RABBIT_PASSWORD:-}@rabbitmq:5672/
+      ConnectionStrings__BotUri: http://telegrambot:5002
+    ports:
+      - "5001:5001"
+    networks:
+      - notifications
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      telegrambot:
+        condition: service_started
+  telegrambot:
+    build:
+      context: ../database-service/
+      dockerfile: TelegramBot/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:5002
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__TelegramApiToken: <token>
+    ports:
+      - "5002:5002"
+    networks:
+      - notifications
   postgres:
     image: postgres:13
     container_name: postgres
