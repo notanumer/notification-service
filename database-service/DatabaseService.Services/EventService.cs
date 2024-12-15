@@ -21,8 +21,7 @@ public class EventService : IEventService
     public async Task SendEventAsync(Event notificationEvent, CancellationToken cancellationToken = default)
     {
         notificationEvent.NotificationId = Guid.NewGuid().ToString();
-        var message = JsonConvert.SerializeObject(notificationEvent);
-        var isSuccess = await _rabbitMqService.SendMessageAsync(message, cancellationToken);
+        var isSuccess = await _rabbitMqService.SendMessageAsync(notificationEvent, cancellationToken);
 
         var notification = new Notification()
         {

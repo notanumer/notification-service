@@ -1,5 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35527.113
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseService", "DatabaseService\DatabaseService.csproj", "{40DC882F-EF34-47FE-B3EB-AEA1B0344846}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseService.Models", "DatabaseService.Models\DatabaseService.Models.csproj", "{16C74F40-0F63-4F09-8D31-FF71A380023C}"
@@ -7,6 +10,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseService.DataAccess", "DatabaseService.DataAccess\DatabaseService.DataAccess.csproj", "{B50FB3FA-CAA9-458F-9308-56D6167DDEBE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseService.Services", "DatabaseService.Services\DatabaseService.Services.csproj", "{7A892E4B-8B13-4F05-A3A7-2F1BA84B63FA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database.Microservices", "Database.Microservices", "{4CEB85F2-E716-4142-B3E9-411C9CFC2A4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BaseMicroservice", "BaseMicroservice\BaseMicroservice.csproj", "{0448A8A9-3313-48E4-B53B-C3FD2D7EE666}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramNotifier", "TelegramNotifier\TelegramNotifier.csproj", "{53C7B8A9-3DCE-43C8-8D5F-2A9189DCDCEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot", "TelegramBot\TelegramBot.csproj", "{E929B9DA-6C23-4C7D-9C6D-BE5449073336}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,5 +41,25 @@ Global
 		{7A892E4B-8B13-4F05-A3A7-2F1BA84B63FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7A892E4B-8B13-4F05-A3A7-2F1BA84B63FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7A892E4B-8B13-4F05-A3A7-2F1BA84B63FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0448A8A9-3313-48E4-B53B-C3FD2D7EE666}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0448A8A9-3313-48E4-B53B-C3FD2D7EE666}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0448A8A9-3313-48E4-B53B-C3FD2D7EE666}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0448A8A9-3313-48E4-B53B-C3FD2D7EE666}.Release|Any CPU.Build.0 = Release|Any CPU
+		{53C7B8A9-3DCE-43C8-8D5F-2A9189DCDCEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53C7B8A9-3DCE-43C8-8D5F-2A9189DCDCEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53C7B8A9-3DCE-43C8-8D5F-2A9189DCDCEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53C7B8A9-3DCE-43C8-8D5F-2A9189DCDCEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E929B9DA-6C23-4C7D-9C6D-BE5449073336}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E929B9DA-6C23-4C7D-9C6D-BE5449073336}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E929B9DA-6C23-4C7D-9C6D-BE5449073336}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E929B9DA-6C23-4C7D-9C6D-BE5449073336}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{0448A8A9-3313-48E4-B53B-C3FD2D7EE666} = {4CEB85F2-E716-4142-B3E9-411C9CFC2A4F}
+		{53C7B8A9-3DCE-43C8-8D5F-2A9189DCDCEB} = {4CEB85F2-E716-4142-B3E9-411C9CFC2A4F}
+		{E929B9DA-6C23-4C7D-9C6D-BE5449073336} = {4CEB85F2-E716-4142-B3E9-411C9CFC2A4F}
 	EndGlobalSection
 EndGlobal
