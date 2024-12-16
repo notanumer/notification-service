@@ -35,6 +35,8 @@ services:
         condition: service_healthy
       elasticsearch:
         condition: service_healthy
+      emailservice:
+        condition: service_started
       telegramservice:
         condition: service_started
   telegramservice:
@@ -68,6 +70,27 @@ services:
       - "5002:5002"
     networks:
       - notifications
+  emailservice:
+    build:
+      context: ../database-service/
+      dockerfile: EmailNotifier/Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:5003
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__QueueName: Email
+      ConnectionStrings__RabbitMqUri: amqp://guest:${RABBIT_PASSWORD:-}@rabbitmq:5672/
+      MessageSettings_Host: smtp.yandex.ru
+      MessageSettings_Port: 465
+      MessageSettings_SmtpEmailAddress: ${SMTP_EMAIL:-}
+      MessageSettings_SmtpPassword: ${SMTP_PASSWORD:-}
+      MessageSettings_SecureSocketOption: SslOnConnect
+    ports:
+      - "5003:5003"
+    networks:
+      - notifications
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
   postgres:
     image: postgres:13
     container_name: postgres
