@@ -12,6 +12,7 @@ namespace DatabaseService.Models.Rabbit
     public enum ChannelType
     {
         Telegram,
-        VK
+        VK,
+        Email,
     }
 }
