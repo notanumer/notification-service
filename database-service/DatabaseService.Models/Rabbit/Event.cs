@@ -6,7 +6,7 @@ public class Event
 {
     [JsonIgnore]
     public required string NotificationId { get; set; }
-    public required string ChannelType { get; set; }
+    public required ChannelType ChannelType { get; set; }
     public required string Recipient { get; set; }
     public required MessageContent MessageContent { get; set; }
     public required string CreatedAt { get; set; }
