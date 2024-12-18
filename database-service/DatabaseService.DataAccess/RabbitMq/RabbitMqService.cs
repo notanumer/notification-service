@@ -31,6 +31,9 @@ public class RabbitMqService : IRabbitMqService
             case ChannelType.VK:
                 queue = "VK";
                 break;
+            case ChannelType.Email:
+                queue = "Email";
+                break;
             default:
                 throw new NotSupportedException("Channel type not supported");
         }
