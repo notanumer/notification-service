@@ -1,7 +1,5 @@
 ﻿using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Data.Common;
-using System.Text;
 
 namespace BaseMicroservice
 {

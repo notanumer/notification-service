@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 
-namespace DatabaseService.Middlewares;
+namespace BaseMicroservice.Middlewares;
 
 public class TraceIdMiddleware(RequestDelegate next)
 {

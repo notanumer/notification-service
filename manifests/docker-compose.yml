@@ -43,6 +43,7 @@ services:
         condition: service_started
       telegramservice:
         condition: service_started
+
   telegramservice:
     build:
       context: ../database-service/
@@ -53,6 +54,7 @@ services:
       ConnectionStrings__QueueName: Telegram
       ConnectionStrings__RabbitMqUri: amqp://guest:${RABBIT_PASSWORD:-}@rabbitmq:5672/
       ConnectionStrings__BotUri: http://telegrambot:5002
+      ConnectionStrings__ElasticSearchUri: http://elastic:${ELASTIC_PASSWORD:-}@elasticsearch:9200/
     ports:
       - "5001:5001"
     networks:
@@ -62,6 +64,7 @@ services:
         condition: service_healthy
       telegrambot:
         condition: service_started
+
   telegrambot:
     build:
       context: ../database-service/
@@ -69,11 +72,13 @@ services:
     environment:
       ASPNETCORE_URLS: http://+:5002
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__TelegramApiToken: <token>
+      ConnectionStrings__TelegramApiToken: ${TG_TOKEN:-}
+      ConnectionStrings__ElasticSearchUri: http://elastic:${ELASTIC_PASSWORD:-}@elasticsearch:9200/
     ports:
       - "5002:5002"
     networks:
       - notifications
+
   emailservice:
     build:
       context: ../database-service/
@@ -88,6 +93,7 @@ services:
       MessageSettings_SmtpEmailAddress: ${SMTP_EMAIL:-}
       MessageSettings_SmtpPassword: ${SMTP_PASSWORD:-}
       MessageSettings_SecureSocketOption: SslOnConnect
+      ConnectionStrings__ElasticSearchUri: http://elastic:${ELASTIC_PASSWORD:-}@elasticsearch:9200/
     ports:
       - "5003:5003"
     networks:
@@ -95,6 +101,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+  
   postgres:
     image: postgres:13
     container_name: postgres
