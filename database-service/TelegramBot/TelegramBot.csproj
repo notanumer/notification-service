@@ -16,4 +16,8 @@
     <PackageReference Include="Telegram.Bot" Version="22.2.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\BaseMicroservice\BaseMicroservice.csproj" />
+  </ItemGroup>
+
 </Project>
