@@ -1,7 +1,7 @@
 # Короче с запуском все просто, 3 команды:
 # docker compose up setup - и ждем пока не закончится с exit code 0. Эта джоба создает пользователя
 # docker compose up -d - тут запускаются все сервисы от бд до метрик
-# docker compose up databaseservice -d - если надо (тк можно разрабатывать локально), то запускаем сервис уведомлений
+# docker compose --profile microservices up -d - если надо (тк можно разрабатывать локально), то запускаем сервис уведомлений
 # Запускать все из папки manifests
 
 # С появлением новых сервисов будем их сюда добавлять, можете делать по аналогии с существующим
@@ -17,8 +17,9 @@
 
 services:
   databaseservice:
+    restart: unless-stopped
     profiles:
-      - databaseservice
+      - microservices
     build:
       context: ../database-service/
       dockerfile: DatabaseService/Dockerfile
@@ -45,6 +46,9 @@ services:
         condition: service_started
 
   telegramservice:
+    restart: unless-stopped
+    profiles:
+      - microservices
     build:
       context: ../database-service/
       dockerfile: TelegramNotifier/Dockerfile
@@ -66,6 +70,9 @@ services:
         condition: service_started
 
   telegrambot:
+    restart: unless-stopped
+    profiles:
+      - microservices
     build:
       context: ../database-service/
       dockerfile: TelegramBot/Dockerfile
@@ -80,6 +87,9 @@ services:
       - notifications
 
   emailservice:
+    restart: unless-stopped
+    profiles:
+      - microservices
     build:
       context: ../database-service/
       dockerfile: EmailNotifier/Dockerfile
@@ -88,11 +98,11 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__QueueName: Email
       ConnectionStrings__RabbitMqUri: amqp://guest:${RABBIT_PASSWORD:-}@rabbitmq:5672/
-      MessageSettings_Host: smtp.yandex.ru
-      MessageSettings_Port: 465
-      MessageSettings_SmtpEmailAddress: ${SMTP_EMAIL:-}
-      MessageSettings_SmtpPassword: ${SMTP_PASSWORD:-}
-      MessageSettings_SecureSocketOption: SslOnConnect
+      MessageSettings__Host: ${SMTP_HOST$:-}
+      MessageSettings__Port: 465
+      MessageSettings__SmtpEmailAddress: ${SMTP_EMAIL:-}
+      MessageSettings__SmtpPassword: ${SMTP_PASSWORD:-}
+      MessageSettings__SecureSocketOption: SslOnConnect
       ConnectionStrings__ElasticSearchUri: http://elastic:${ELASTIC_PASSWORD:-}@elasticsearch:9200/
     ports:
       - "5003:5003"
@@ -103,6 +113,7 @@ services:
         condition: service_healthy
   
   postgres:
+    restart: unless-stopped
     image: postgres:13
     container_name: postgres
     environment:
@@ -123,6 +134,7 @@ services:
       start_period: 30s
 
   rabbitmq:
+    restart: unless-stopped
     image: rabbitmq:3-management
     container_name: rabbitmq
     environment:
