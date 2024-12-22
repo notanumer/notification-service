@@ -8,4 +8,6 @@ public interface IAppDbContext : IDbContextWithSets, IDisposable
     DbSet<Notification> Notifications { get; }
     
     DbSet<Channel> Channels { get; }
+    
+    DbSet<User> Users { get; }
 }

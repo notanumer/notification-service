@@ -12,6 +12,8 @@ public class AppDbContext : DbContext, IAppDbContext
 
     public DbSet<Channel> Channels => Set<Channel>();
     
+    public DbSet<User> Users => Set<User>();
+    
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
