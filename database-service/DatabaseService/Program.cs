@@ -32,6 +32,7 @@ builder.Services.AddAsyncInitializer<DatabaseInitializer>();
 builder.Services.AddScoped<IAppDbContext>(s => s.GetRequiredService<AppDbContext>());
 builder.Services.AddScoped<IRabbitMqService, RabbitMqService>();
 builder.Services.AddTransient<IEventService, EventService>();
+builder.Services.AddTransient<IUserService, UserService>();
 
 var app = builder.Build();
 

@@ -9,14 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Extensions.Hosting.AsyncInitialization" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.11" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BaseMicroservice\BaseMicroservice.csproj" />
+    <ProjectReference Include="..\DatabaseService.DataAccess\DatabaseService.DataAccess.csproj" />
     <ProjectReference Include="..\DatabaseService.Models\DatabaseService.Models.csproj" />
+    <ProjectReference Include="..\DatabaseService.Services\DatabaseService.Services.csproj" />
   </ItemGroup>
 
 </Project>

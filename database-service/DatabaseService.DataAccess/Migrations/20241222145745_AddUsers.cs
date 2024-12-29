@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using DatabaseService.Models.Postgres;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -18,7 +19,7 @@ namespace DatabaseService.DataAccess.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     UserName = table.Column<string>(type: "text", unicode: false, nullable: true),
-                    Credentials = table.Column<string>(type: "jsonb", unicode: false, nullable: true)
+                    Credentials = table.Column<Credentials>(type: "jsonb", unicode: false, nullable: true)
                 },
                 constraints: table =>
                 {

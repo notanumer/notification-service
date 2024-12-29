@@ -1,5 +1,6 @@
 using BaseMicroservice;
 using TelegramNotifier.Services;
+using TelegramBot.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +9,12 @@ var elasticUri = new Uri(builder.Configuration.GetConnectionString("ElasticSearc
 
 builder.Services.AddElkLogging(elasticUri);
 builder.Services.AddApplicationMetrics();
+
+var userApiUri = builder.Configuration.GetConnectionString("UserApiUri")
+             ?? throw new ArgumentNullException("UserApiUri",
+                 "User api uri uri is not initialized");
+
+builder.Services.AddSingleton(provider => new UserCredentialsService(userApiUri));
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -26,6 +33,7 @@ var botUri = builder.Configuration.GetConnectionString("BotUri")
                  "Bot uri is not initialized");
 
 builder.Services.AddHostedService<MainService>(provider => new MainService(
+    provider.GetService<UserCredentialsService>(),
     botUri,
     rabbitUri,
     queueName
@@ -44,5 +52,16 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+/*app.MapPatch("/register/{userName}/{chatId}", async (
+    [FromRoute] string userName,
+    [FromRoute] string chatId,
+    [FromServices] IUserService service
+) =>
+{
+    await service.PatchCredentials(
+        userName, 
+        new DatabaseService.Models.Postgres.Credentials() { TelegramChatId = chatId }
+    );
+});*/
 
 app.Run();

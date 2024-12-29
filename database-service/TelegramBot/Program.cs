@@ -16,7 +16,9 @@ builder.Services.AddSwaggerGen();
 var apiKey = builder.Configuration.GetConnectionString("TelegramApiToken")
              ?? throw new ArgumentNullException("ConnectionStrings:TelegramApiToken",
                  "Telegram api key not found");
-builder.Services.AddScoped(_ => new TelegramBotNotifyService(apiKey));
+builder.Services.AddScoped(provider => new TelegramBotNotifyService(
+    apiKey
+));
 
 builder.Services.AddHostedService(_ => new TelegramBotService(apiKey));
 var app = builder.Build();
@@ -28,12 +30,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.Use((req) =>
-{
-    Console.WriteLine(req.Method);
-    return req;
-});
 
 app.MapPost("/bot/send", async (
     [FromServices] TelegramBotNotifyService service,
