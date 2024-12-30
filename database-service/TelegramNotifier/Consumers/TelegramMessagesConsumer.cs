@@ -1,16 +1,26 @@
 ﻿using BaseMicroservice;
 using DatabaseService.Models.Rabbit;
+using DatabaseService.Services.Abstractions;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
+using TelegramBot.Services;
 
 namespace TelegramNotifier.Consumers
 {
     public class TelegramMessagesConsumer : BaseRabbitConsumer
     {
         HttpClient client;
-        public TelegramMessagesConsumer(string telegramBotServiceAddress, string rabbitUri, string queueName) : base(rabbitUri, queueName) {
+        UserCredentialsService _credentialsService;
+
+        public TelegramMessagesConsumer(
+            UserCredentialsService credentialsService,
+            string telegramBotServiceAddress, 
+            string rabbitUri, 
+            string queueName
+        ) : base(rabbitUri, queueName) {
             client = new HttpClient() { BaseAddress = new Uri(telegramBotServiceAddress)};
+            _credentialsService = credentialsService;
         }
 
         public override async Task Handler(object model, BasicDeliverEventArgs args)
@@ -18,9 +28,17 @@ namespace TelegramNotifier.Consumers
             var body = args.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
             var ev = JsonSerializer.Deserialize<Event>(message);
+
+            var credential = await _credentialsService.GetCredentials(ev.Recipient);
+            if ( credential == null )
+            {
+                Console.WriteLine("Wrong credentials format");
+                return;
+            }
+
             JsonContent content = JsonContent.Create(new
             {
-                UserId = long.Parse(ev.Recipient),
+                UserId = long.Parse(credential),
                 Text = ev.MessageContent.Text!
             });
             try

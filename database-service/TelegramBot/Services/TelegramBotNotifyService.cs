@@ -6,11 +6,13 @@ namespace TelegramBot.Services
     public class TelegramBotNotifyService
     {
         public string ApiKey { get; }
+
         private TelegramBotClient _botClient;
         private CancellationTokenSource _token;
 
-        public TelegramBotNotifyService(string apiKey)
-        {
+        public TelegramBotNotifyService(
+            string apiKey
+        ) {
             ApiKey = apiKey;
             _botClient = new TelegramBotClient(apiKey);
             _token = new CancellationTokenSource();

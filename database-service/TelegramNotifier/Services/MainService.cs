@@ -1,4 +1,6 @@
-﻿using TelegramNotifier.Consumers;
+﻿using DatabaseService.Services.Abstractions;
+using TelegramBot.Services;
+using TelegramNotifier.Consumers;
 
 namespace TelegramNotifier.Services
 {
@@ -6,9 +8,13 @@ namespace TelegramNotifier.Services
     {
         TelegramMessagesConsumer? consumer;
 
-        public MainService(string telegramBotServiceAddress, string rabbitUri, string queueName)
-        {
-            consumer = new TelegramMessagesConsumer(telegramBotServiceAddress, rabbitUri, queueName);
+        public MainService(
+            UserCredentialsService credentialsService,
+            string telegramBotServiceAddress, 
+            string rabbitUri, 
+            string queueName
+        ) {
+            consumer = new TelegramMessagesConsumer(credentialsService, telegramBotServiceAddress, rabbitUri, queueName);
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
