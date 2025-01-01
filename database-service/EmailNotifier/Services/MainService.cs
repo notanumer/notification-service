@@ -1,17 +1,21 @@
 using EmailNotifier.Configuration;
 using EmailNotifier.Consumers;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
-namespace EmailService.Services;
+namespace EmailNotifier.Services;
 
 internal class MainService : IHostedService
 {
     EmailMessagesConsumer? consumer;
 
-    public MainService(MessageSettings messageSettings, string rabbitUri, string queueName)
+    public MainService(
+        UserCredentialsService credentialsService, 
+        MessageSettings messageSettings, 
+        string rabbitUri, 
+        string queueName,
+        IServiceProvider serviceProvider)
     {
-        consumer = new EmailMessagesConsumer(messageSettings, rabbitUri, queueName);
+        var logger = serviceProvider.GetService<ILogger<EmailMessagesConsumer>>();
+        consumer = new EmailMessagesConsumer(credentialsService, messageSettings, rabbitUri, queueName, logger);
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)

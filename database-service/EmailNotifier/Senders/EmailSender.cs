@@ -9,9 +9,9 @@ namespace EmailNotifier.Senders;
 
 internal interface ISender
 {
-    Task<SendMessageResult> SendAsync(Event eventData);
+    Task<SendMessageResult> SendAsync(string userAddress, Event eventData);
 
-    MimeMessage CreateMessage(Event eventData);
+    MimeMessage CreateMessage(string userAddress, Event eventData);
 }
 
 internal class EmailSender : ISender
@@ -23,11 +23,11 @@ internal class EmailSender : ISender
         _settings = settings;
     }
 
-    public async Task<SendMessageResult> SendAsync(Event eventData)
+    public async Task<SendMessageResult> SendAsync(string userAddress, Event eventData)
     {
         try
         {
-            var message = CreateMessage(eventData);
+            var message = CreateMessage(userAddress, eventData);
 
             using (var client = new SmtpClient())
             {
@@ -45,12 +45,12 @@ internal class EmailSender : ISender
         }
     }
 
-    public MimeMessage CreateMessage(Event eventData)
+    public MimeMessage CreateMessage(string userAddress, Event eventData)
     {
         var emailMessage = new MimeMessage();
 
         emailMessage.From.Add(new MailboxAddress("Служебное сообщение", _settings.SmtpEmailAddress));
-        emailMessage.To.Add(new MailboxAddress(null, eventData.Recipient));
+        emailMessage.To.Add(new MailboxAddress(null, userAddress));
 
         if (eventData.MessageContent.Subject is not null)
             emailMessage.Subject = eventData.MessageContent.Subject;

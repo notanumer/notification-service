@@ -1,6 +1,7 @@
 using BaseMicroservice;
 using EmailNotifier.Configuration;
 using EmailNotifier.Senders;
+using EmailNotifier.Services;
 using RabbitMQ.Client.Events;
 
 namespace EmailNotifier.Consumers;
@@ -8,45 +9,58 @@ namespace EmailNotifier.Consumers;
 internal class EmailMessagesConsumer : BaseRabbitConsumer
 {
     private readonly ISender _sender;
+    private readonly UserCredentialsService _credentialsService;
+    private readonly ILogger<EmailMessagesConsumer> _logger;
+    
 
     public EmailMessagesConsumer(
+        UserCredentialsService credentialsService,
         MessageSettings messageSettings,
         string rabbitUri,
-        string queueName)
+        string queueName,
+        ILogger<EmailMessagesConsumer> logger)
         : base(rabbitUri, queueName)
     {
         _sender = new EmailSender(messageSettings);
+        _credentialsService = credentialsService;
+        _logger = logger;
     }
 
     public override async Task Handler(object model, BasicDeliverEventArgs args)
     {
         var ev = EventDeserializer.Deserialize(args);
-
         if (ev == null)
         {
-            HandledFailedSending(args, "Event is null");
+            LogFailedSending(ev?.Recipient, "Event is null");
+            return;
+        }
+        
+        var credential = await _credentialsService.GetCredentials(ev.Recipient);
+        if (credential == null)
+        {
+            LogFailedSending(ev.Recipient,"Wrong credentials format");
             return;
         }
 
-        var sendResult = await _sender.SendAsync(ev);
+        var sendResult = await _sender.SendAsync(credential, ev);
         if (sendResult.IsSuccess)
-            HandledSuccessfulSending(args);
+            LogSuccessfulSending(ev.Recipient);
         else 
-            HandledFailedSending(args, sendResult.Exception.ToString());
+            LogFailedSending(ev.Recipient, sendResult.Exception.ToString());
 
         await Task.CompletedTask;
     }
 
     #region HandleSendResult
 
-    private void HandledSuccessfulSending(BasicDeliverEventArgs eventArgs)
+    private void LogSuccessfulSending(string userName)
     {
-        Console.WriteLine("Sent message");
+        _logger.LogInformation($"Message to the user {userName} was sent by mail");
     }
 
-    private void HandledFailedSending(BasicDeliverEventArgs eventArgs, string exception)
+    private void LogFailedSending(string userName, string exception)
     {
-        Console.WriteLine($"Failed to send message:\n {exception}");
+        _logger.LogError($"Failed send message to user {userName} by Email:\n {exception}");
     }
 
     #endregion
