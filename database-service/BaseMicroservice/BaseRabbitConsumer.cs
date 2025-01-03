@@ -1,9 +1,10 @@
-﻿using RabbitMQ.Client;
+﻿using DatabaseService.Models.Rabbit;
+using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace BaseMicroservice
 {
-    public class BaseRabbitConsumer : IDisposable
+    public abstract class BaseRabbitConsumer : IDisposable
     {
         private IConnection connection;
         private IChannel channel;
@@ -29,8 +30,6 @@ namespace BaseMicroservice
             channel = await connection.CreateChannelAsync();
 
             await channel.QueueDeclareAsync(queue: QueueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
-
-            Console.WriteLine("[*] Waiting for messages.");
 
             var consumer = new AsyncEventingBasicConsumer(channel);
             consumer.ReceivedAsync += Handler;

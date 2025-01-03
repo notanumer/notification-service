@@ -8,15 +8,18 @@ namespace TelegramBot.Services
 {
     public class TelegramBotService : IHostedService
     {
-        public string ApiKey { get; }
         private TelegramBotClient _botClient;
         private CancellationTokenSource _token;
+        private ILogger<TelegramBotService> _logger;
 
-        public TelegramBotService(string apiKey)
+        public string ApiKey { get; }
+
+        public TelegramBotService(string apiKey, ILogger<TelegramBotService> logger)
         {
             ApiKey = apiKey;
             _botClient = new TelegramBotClient(ApiKey);
             _token = new CancellationTokenSource();
+            _logger = logger;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -37,9 +40,9 @@ namespace TelegramBot.Services
             var _receiverOptions = new ReceiverOptions
             {
                 AllowedUpdates = new[]
-            {
-                UpdateType.Message,
-            },
+                {
+                    UpdateType.Message,
+                },
                 DropPendingUpdates = true,
             };
 
@@ -50,17 +53,18 @@ namespace TelegramBot.Services
             //await Task.Delay(10000);
         }
 
-        private static async Task UpdateHandler(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        private async Task UpdateHandler(ITelegramBotClient botClient, Update update,
+            CancellationToken cancellationToken)
         {
             try
             {
                 switch (update.Type)
                 {
                     case UpdateType.Message:
-                        {
-                            Console.WriteLine($"Chat id: {update.Message.Chat.Id}");
-                            return;
-                        }
+                    {
+                        _logger.LogInformation($"Chat id: {update.Message.Chat.Id}");
+                        return;
+                    }
                 }
             }
             catch (Exception ex)
@@ -69,7 +73,7 @@ namespace TelegramBot.Services
             }
         }
 
-        private static Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
+        private Task ErrorHandler(ITelegramBotClient botClient, Exception error, CancellationToken cancellationToken)
         {
             var ErrorMessage = error switch
             {
@@ -78,7 +82,7 @@ namespace TelegramBot.Services
                 _ => error.ToString()
             };
 
-            Console.WriteLine(ErrorMessage);
+            _logger.LogError(ErrorMessage);
             return Task.CompletedTask;
         }
     }

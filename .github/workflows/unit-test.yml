@@ -1,0 +1,29 @@
+name: Test
+on: 
+    push:
+        branches:
+            - '**'
+    pull_request:
+        branches:
+            - '**'
+    create:
+    workflow_dispatch:
+jobs:
+    run-unit-tests:
+        name: Unit Tests - ${{ github.ref_name }} 
+        runs-on: ubuntu-latest
+        steps:
+            - name: Show Trigger Event
+              run: echo "${{ github.event_name }}"
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+            - name: Setup .NET SDK
+              uses: actions/setup-dotnet@v4
+              with:
+                dotnet-version: 8.0.x
+            - name: Restore Deps
+              run: dotnet restore
+            - name: Build Project
+              run: dotnet build --configuration Release --no-restore 
+            - name: Run Unit Tests
+              run: dotnet test --configuration Release --no-build --verbosity normal

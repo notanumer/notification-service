@@ -1,31 +1,31 @@
-﻿using DatabaseService.Services.Abstractions;
-using TelegramBot.Services;
-using TelegramNotifier.Consumers;
+﻿using BaseMicroservice;
 
 namespace TelegramNotifier.Services
 {
     public class MainService : IHostedService
     {
-        TelegramMessagesConsumer? consumer;
+        private BaseRabbitConsumer? _consumer;
+        private ILogger<MainService> _logger;
 
-        public MainService(
-            UserCredentialsService credentialsService,
-            string telegramBotServiceAddress, 
-            string rabbitUri, 
-            string queueName
-        ) {
-            consumer = new TelegramMessagesConsumer(credentialsService, telegramBotServiceAddress, rabbitUri, queueName);
+        public MainService(BaseRabbitConsumer consumer, ILogger<MainService> logger)
+        {
+            _consumer = consumer;
+            _logger = logger;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            await consumer?.ExecuteAsync(cancellationToken);
+            _logger.LogInformation("Telegram notifier started");
+
+            await _consumer?.ExecuteAsync(cancellationToken);
             await Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            consumer?.Dispose();
+            _logger.LogInformation("Telegram Notifier stopped");
+
+            _consumer?.Dispose();
             return Task.CompletedTask;
         }
     }

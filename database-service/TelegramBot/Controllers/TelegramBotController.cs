@@ -1,8 +1,7 @@
-using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Mvc;
 using TelegramBot.Services;
 
-namespace DatabaseService.Controllers;
+namespace TelegramBot.Controllers;
 
 [ApiController]
 [Route("bot")]

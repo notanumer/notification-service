@@ -1,32 +1,33 @@
+using BaseMicroservice;
 using EmailNotifier.Configuration;
 using EmailNotifier.Consumers;
 
 namespace EmailNotifier.Services;
 
-internal class MainService : IHostedService
+public class MainService : IHostedService
 {
-    EmailMessagesConsumer? consumer;
+    private BaseRabbitConsumer? _consumer;
+    private readonly ILogger<MainService> _logger;
 
-    public MainService(
-        UserCredentialsService credentialsService, 
-        MessageSettings messageSettings, 
-        string rabbitUri, 
-        string queueName,
-        IServiceProvider serviceProvider)
+    public MainService(BaseRabbitConsumer consumer, ILogger<MainService> logger)
     {
-        var logger = serviceProvider.GetService<ILogger<EmailMessagesConsumer>>();
-        consumer = new EmailMessagesConsumer(credentialsService, messageSettings, rabbitUri, queueName, logger);
+        _consumer = consumer;
+        _logger = logger;
     }
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        await consumer?.ExecuteAsync(cancellationToken);
+        _logger.LogInformation("Email Notifier started");
+
+        await _consumer?.ExecuteAsync(cancellationToken);
         await Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        consumer?.Dispose();
+        _logger.LogInformation("Email Notifier stopped");
+
+        _consumer?.Dispose();
         return Task.CompletedTask;
     }
 }

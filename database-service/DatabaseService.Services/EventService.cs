@@ -30,7 +30,6 @@ public class EventService : IEventService
             Recipient = notificationEvent.Recipient,
             IsSuccess = isSuccess,
             CreatedAt = DateTimeOffset.Now,
-
         };
 
         await _appDbContext.Notifications.AddAsync(notification, cancellationToken);

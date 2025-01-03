@@ -20,7 +20,7 @@ builder.Services.AddScoped(provider => new TelegramBotNotifyService(
     apiKey
 ));
 
-builder.Services.AddHostedService(_ => new TelegramBotService(apiKey));
+builder.Services.AddHostedService(provider => new TelegramBotService(apiKey, provider.GetService<ILogger<TelegramBotService>>()));
 var app = builder.Build();
 
 app.UseTelemetryEndpoints();

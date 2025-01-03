@@ -7,14 +7,14 @@ using MimeKit.Text;
 
 namespace EmailNotifier.Senders;
 
-internal interface ISender
+public interface ISender
 {
     Task<SendMessageResult> SendAsync(string userAddress, Event eventData);
 
     MimeMessage CreateMessage(string userAddress, Event eventData);
 }
 
-internal class EmailSender : ISender
+public class EmailSender : ISender
 {
     private readonly MessageSettings _settings;
 

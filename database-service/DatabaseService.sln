@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramBot", "TelegramBot\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmailNotifier", "EmailNotifier\EmailNotifier.csproj", "{5EBA545B-9368-413A-843F-18A52FABF263}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{EF2F372C-5563-4E06-9E6B-8092D86AD81C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{5EBA545B-9368-413A-843F-18A52FABF263}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5EBA545B-9368-413A-843F-18A52FABF263}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5EBA545B-9368-413A-843F-18A52FABF263}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF2F372C-5563-4E06-9E6B-8092D86AD81C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF2F372C-5563-4E06-9E6B-8092D86AD81C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF2F372C-5563-4E06-9E6B-8092D86AD81C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF2F372C-5563-4E06-9E6B-8092D86AD81C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

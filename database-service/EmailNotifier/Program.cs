@@ -1,5 +1,7 @@
 using BaseMicroservice;
 using EmailNotifier.Configuration;
+using EmailNotifier.Consumers;
+using EmailNotifier.Senders;
 using EmailNotifier.Services;
 using Microsoft.Extensions.Options;
 
@@ -26,18 +28,24 @@ var queueName = builder.Configuration.GetConnectionString("RabbitMqQueueName")
                 ?? throw new ArgumentNullException("RabbitMqQueueName",
                     "Rabbit connection string is not initialized");
 
-builder.Services.AddSingleton(provider => new UserCredentialsService(userApiUri));
-
 builder.Services.Configure<MessageSettings>(
     builder.Configuration.GetSection("MessageSettings"));
 
-builder.Services.AddHostedService<MainService>(provider => new MainService(
-    provider.GetService<UserCredentialsService>(),
-    provider.GetRequiredService<IOptions<MessageSettings>>().Value,
+builder.Services.AddSingleton<IUserCredentialsService>(provider => new UserCredentialsService(userApiUri));
+
+builder.Services.AddSingleton<ISender>(provider => new EmailSender(
+    provider.GetService<IOptions<MessageSettings>>().Value
+));
+
+builder.Services.AddSingleton<BaseRabbitConsumer>(provider => new EmailMessagesConsumer(
+    provider.GetService<IUserCredentialsService>(),
+    provider.GetService<ISender>(),
     rabbitUri,
     queueName,
-    provider
+    provider.GetService<ILogger<EmailMessagesConsumer>>()
 ));
+
+builder.Services.AddHostedService<MainService>();
 
 var app = builder.Build();
 

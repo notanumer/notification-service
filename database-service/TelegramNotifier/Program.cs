@@ -1,6 +1,6 @@
 using BaseMicroservice;
+using TelegramNotifier.Consumers;
 using TelegramNotifier.Services;
-using TelegramBot.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,8 +11,8 @@ builder.Services.AddElkLogging(elasticUri);
 builder.Services.AddApplicationMetrics();
 
 var userApiUri = builder.Configuration.GetConnectionString("UserApiUri")
-             ?? throw new ArgumentNullException("UserApiUri",
-                 "User api uri uri is not initialized");
+                 ?? throw new ArgumentNullException("UserApiUri",
+                     "User api uri uri is not initialized");
 
 builder.Services.AddSingleton(provider => new UserCredentialsService(userApiUri));
 
@@ -32,12 +32,17 @@ var botUri = builder.Configuration.GetConnectionString("BotUri")
              ?? throw new ArgumentNullException("QueueName",
                  "Bot uri is not initialized");
 
-builder.Services.AddHostedService<MainService>(provider => new MainService(
-    provider.GetService<UserCredentialsService>(),
+builder.Services.AddSingleton<IUserCredentialsService>(provider => new UserCredentialsService(userApiUri));
+
+builder.Services.AddSingleton<BaseRabbitConsumer>(provider => new TelegramMessagesConsumer(
+    provider.GetService<IUserCredentialsService>(),
     botUri,
     rabbitUri,
-    queueName
+    queueName,
+    provider.GetService<ILogger<TelegramMessagesConsumer>>()
 ));
+
+builder.Services.AddHostedService<MainService>();
 
 var app = builder.Build();
 
@@ -59,7 +64,7 @@ app.UseHttpsRedirection();
 ) =>
 {
     await service.PatchCredentials(
-        userName, 
+        userName,
         new DatabaseService.Models.Postgres.Credentials() { TelegramChatId = chatId }
     );
 });*/
