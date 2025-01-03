@@ -22,8 +22,8 @@ jobs:
               with:
                 dotnet-version: 8.0.x
             - name: Restore Deps
-              run: dotnet restore ./database-service/DataBaseService.sln
+              run: dotnet restore ./database-service/DatabaseService.sln
             - name: Build Project
-              run: dotnet build ./database-service/DataBaseService.sln --configuration Release --no-restore 
+              run: dotnet build ./database-service/DatabaseService.sln --configuration Release --no-restore 
             - name: Run Unit Tests
-              run: dotnet test ./database-service/DataBaseService.sln --configuration Release --no-build --verbosity normal
+              run: dotnet test ./database-service/DatabaseService.sln --configuration Release --no-build --verbosity normal
